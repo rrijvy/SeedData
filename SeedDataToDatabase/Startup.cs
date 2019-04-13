@@ -6,11 +6,15 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SeedDataToDatabase.Data;
+using SeedDataToDatabase.Models;
+using SeedDataToDatabase.Services;
 
 namespace SeedDataToDatabase
 {
@@ -31,7 +35,13 @@ namespace SeedDataToDatabase
                 options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection"));
             });
 
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+                .AddEntityFrameworkStores<ApplicationDbContext>()
+                .AddDefaultTokenProviders();
+
             services.AddTransient<SeedData>();
+
+            services.AddTransient<IEmailSender, EmailSender>();
 
             services.Configure<CookiePolicyOptions>(options =>
             {
@@ -59,6 +69,7 @@ namespace SeedDataToDatabase
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+            app.UseAuthentication();
             app.UseCookiePolicy();
 
             app.UseMvc(routes =>
