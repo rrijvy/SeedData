@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using SeedDataToDatabase.Data;
 
 namespace SeedDataToDatabase
 {
@@ -14,7 +16,22 @@ namespace SeedDataToDatabase
     {
         public static void Main(string[] args)
         {
-            CreateWebHostBuilder(args).Build().Run();
+            var host = CreateWebHostBuilder(args).Build();
+
+            Seeder(host);
+
+            host.Run();
+        }
+
+        private static void Seeder(IWebHost host)
+        {
+            var scopeFactory = host.Services.GetService<IServiceScopeFactory>();
+
+            using(var scope = scopeFactory.CreateScope())
+            {
+                var seeder = scope.ServiceProvider.GetService<SeedData>();
+                seeder.Seed();
+            }
         }
 
         public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
